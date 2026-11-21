@@ -189,7 +189,7 @@
         const c = await DB.get("claims/" + key);
         if (!c || c.device !== DEV) {
           setSaved(null);
-          showIntro();
+          showLogin("");
           return;
         }
       }
@@ -208,12 +208,10 @@
       }
       setSaved(key);
       current = key;
-      step = isRestore ? "task" : "base"; // újratöltésnél egyből a saját feladat
-      let first = true;
+      step = "base";
       DB.on("assignment/" + key, taskId => {
         if (current !== key) return;
-        render(key, taskId, !isRestore || !first); // újraosztásnál is újra "visszafejti"
-        first = false;
+        render(key, taskId, true); // újraosztásnál is újra "visszafejti"
       });
       DB.on("claims/" + key, c => {
         if (current !== key) return;
@@ -228,10 +226,27 @@
     }
   }
 
+  // Mindig a Küldetés oldallal indul. "Következő" után: ha ez a telefon már be van lépve,
+  // egyből az ügynök-oldalra visz, különben a névmegadásra.
   $("next").addEventListener("click", () => {
     glitch();
-    showLogin("");
-    $("name").focus();
+    const saved = getSaved();
+    if (saved && PEOPLE[saved]) {
+      document.body.classList.add("compact");
+      $("intro").classList.add("hidden");
+      enter(saved, true);
+    } else {
+      showLogin("");
+      $("name").focus();
+    }
+  });
+
+  // Ha az admin az ÖSSZES belépést törli, minden nyitott oldal visszaugrik a Küldetés oldalra
+  let hadClaims = false;
+  DB.on("claims", all => {
+    const has = !!all && Object.keys(all).length > 0;
+    if (hadClaims && !has && $("intro").classList.contains("hidden")) { setSaved(null); glitch(); showIntro(); }
+    hadClaims = has;
   });
 
   $("form").addEventListener("submit", e => {
@@ -260,8 +275,6 @@
   // időnként magától is "megbicsaklik" a kép
   (function randomGlitch() { setTimeout(() => { glitch(); randomGlitch(); }, 10000 + Math.random() * 12000); })();
 
-  const saved = getSaved();
-  if (saved && PEOPLE[saved]) { document.body.classList.add("compact"); $("intro").classList.add("hidden"); enter(saved, true); }
 })();
 </script>
 </body>
