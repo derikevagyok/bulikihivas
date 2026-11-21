@@ -6,95 +6,7 @@
 <title>Bugi Szülinap – Feladatok</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #160a2b;
-    --bg2: #2a0f4a;
-    --card: rgba(255,255,255,0.08);
-    --border: rgba(255,255,255,0.18);
-    --text: #fff7fb;
-    --muted: #cdb8e6;
-    --accent: #ff4fa3;
-    --accent2: #ffd23f;
-    --accent3: #3fe0d0;
-    --danger: #ff6b6b;
-  }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; min-height: 100%; }
-  body {
-    font-family: "Baloo 2", system-ui, sans-serif;
-    color: var(--text);
-    background: radial-gradient(circle at 20% 0%, #5b1a8c 0%, transparent 50%),
-                radial-gradient(circle at 100% 100%, #8c1a5b 0%, transparent 45%),
-                linear-gradient(160deg, var(--bg), var(--bg2));
-    background-attachment: fixed;
-    display: flex; flex-direction: column; align-items: center;
-    padding: 32px 16px 48px;
-    overflow-x: hidden;
-  }
-  .wrap { width: 100%; max-width: 460px; }
-  header { text-align: center; margin-bottom: 24px; }
-  .emoji { font-size: 56px; line-height: 1; animation: bob 2.4s ease-in-out infinite; display: inline-block; }
-  @keyframes bob { 50% { transform: translateY(-8px) rotate(-6deg); } }
-  h1 {
-    font-size: clamp(30px, 8vw, 42px); margin: 8px 0 4px; line-height: 1.05;
-    background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent3));
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-  }
-  .sub { color: var(--muted); margin: 0; font-size: 17px; }
-  .countdown {
-    margin: 18px auto 0; display: inline-flex; gap: 8px; align-items: center;
-    background: var(--card); border: 1px solid var(--border); border-radius: 999px;
-    padding: 6px 16px; font-weight: 700; font-variant-numeric: tabular-nums;
-  }
-  .countdown span { color: var(--accent2); }
-  .card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 24px;
-    padding: 24px; backdrop-filter: blur(8px);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
-  }
-  label { display: block; font-weight: 700; margin-bottom: 8px; font-size: 18px; }
-  input {
-    width: 100%; font: inherit; font-size: 20px; padding: 14px 16px;
-    border-radius: 14px; border: 2px solid var(--border); background: rgba(0,0,0,0.25);
-    color: var(--text); outline: none; transition: border-color .2s;
-  }
-  input:focus { border-color: var(--accent); }
-  button {
-    width: 100%; margin-top: 14px; font: inherit; font-size: 20px; font-weight: 800;
-    padding: 14px; border: 0; border-radius: 14px; cursor: pointer; color: #2a0f4a;
-    background: linear-gradient(90deg, var(--accent2), var(--accent));
-    transition: transform .1s;
-  }
-  button:active { transform: scale(0.97); }
-  button.ghost {
-    background: transparent; color: var(--muted); border: 1px solid var(--border);
-    font-size: 16px; font-weight: 600; padding: 10px;
-  }
-  .error { color: var(--danger); margin: 10px 0 0; min-height: 1.4em; font-weight: 600; }
-  .hidden { display: none !important; }
-
-  .reveal { animation: pop .5s cubic-bezier(.2,1.4,.4,1); }
-  @keyframes pop { from { transform: scale(.7) rotate(-3deg); opacity: 0; } }
-  .hello { font-size: 22px; margin: 0 0 4px; }
-  .hello b { color: var(--accent2); }
-  .badge {
-    display: inline-block; font-size: 14px; font-weight: 700; padding: 2px 12px;
-    border-radius: 999px; background: var(--accent3); color: #10302d; margin-bottom: 12px;
-  }
-  .task-no { color: var(--accent); font-weight: 800; letter-spacing: .08em; font-size: 14px; text-transform: uppercase; }
-  .task-title { font-size: 28px; line-height: 1.15; margin: 4px 0 12px; }
-  .task-text { font-size: 18px; line-height: 1.5; margin: 0; }
-  .deadline {
-    margin-top: 18px; padding: 12px 14px; border-radius: 14px;
-    background: rgba(255,210,63,0.12); border: 1px dashed var(--accent2); font-weight: 600;
-  }
-  .secret { color: var(--muted); font-size: 15px; text-align: center; margin: 16px 0 0; }
-
-  .confetti { position: fixed; top: -20px; width: 10px; height: 14px; pointer-events: none; z-index: 10;
-    animation: fall linear forwards; border-radius: 2px; }
-  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity: .8; } }
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="wrap">
@@ -105,11 +17,13 @@
     <div class="countdown">⏳ Éjfélig: <span id="cd">--:--:--</span></div>
   </header>
 
+  <div id="demo" class="demo hidden">⚠️ DEMO mód: nincs beállítva adatbázis (config.js), a belépések csak ezen az eszközön tárolódnak.</div>
+
   <section id="login" class="card">
     <form id="form" autocomplete="off">
       <label for="name">Mi a beceneved?</label>
       <input id="name" placeholder="pl. Deri" autocapitalize="words" spellcheck="false">
-      <button type="submit">Mutasd a feladatom! 🎉</button>
+      <button type="submit" id="go">Mutasd a feladatom! 🎉</button>
       <p class="error" id="err"></p>
     </form>
   </section>
@@ -117,108 +31,82 @@
   <section id="result" class="card hidden">
     <p class="hello">Szia, <b id="who"></b>!</p>
     <div id="bday" class="badge hidden">🎈 Te vagy a szülinapos!</div>
-    <div class="task-no" id="tno"></div>
+    <div class="task-no">A te feladatod</div>
     <h2 class="task-title" id="ttitle"></h2>
     <p class="task-text" id="ttext"></p>
     <div class="deadline">🕛 Határidő: ma éjfél. Ha nem sikerül… tudod mi a dolgod. 🍻</div>
-    <p class="secret">🤫 Psszt! Senkinek ne áruld el a feladatod.</p>
-    <button class="ghost" id="back">Kilépés</button>
+    <p class="secret">🤫 Psszt! Senkinek ne áruld el a feladatod.<br>A neved mostantól ehhez a telefonhoz van kötve.</p>
   </section>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="config.js"></script>
+<script src="shared.js"></script>
 <script>
 (function () {
-  // ---- Résztvevők (kulcs: ékezet nélküli kisbetűs becenév) ----
-  const PEOPLE = {
-    bugi: "Bugi", dana: "Dana", bence: "Bence", orsi: "Orsi", gergo: "Gergő",
-    dominik: "Dominik", oliver: "Olivér", zsani: "Zsani", kira: "Kira",
-    barni: "Barni", deri: "Deri"
-  };
-  const BIRTHDAY = "bugi";
-
-  // ---- Feladatok: cap = hány ember kaphatja, who = kik kaphatják ----
-  const TASKS = [
-    { id: 1, cap: 2, title: "Itass le valakit!",
-      text: "Válassz ki valakit, és éjfélig itasd le. Légy kreatív!",
-      who: ["gergo","dominik","oliver","dana","bugi","zsani","kira","deri","orsi"] },
-    { id: 2, cap: 2, title: "Táncpárbaj! 💃",
-      text: "Hívj ki valakit egy táncpárbajra (Just Dance). A többiek szavaznak a győztesről – a vesztes iszik.",
-      who: ["gergo","dominik","dana","bugi","zsani","kira","deri"] },
-    { id: 3, cap: 1, title: "Sörpong a szülinapossal 🍺",
-      text: "Hívd ki a szülinapost sörpongra, és válassz valakit magad mellé. A vesztes iszik. (Ha a szülinapos nem akar játszani, válassz valaki mást.)",
-      who: ["gergo","dominik","oliver","dana","zsani","kira","deri"] },
-    { id: 4, cap: 1, title: "Csíped a szülinapost? 📎",
-      text: "Válassz magad mellé egy társat. A cél, hogy minél több csipeszt tegyetek a szülinaposra. De ha észreveszi a csipeszeket és LEVESZI, mindketten isztok. Utána újrakezdhetitek.",
-      who: ["bence","gergo","dominik","oliver","dana","zsani","kira"] },
-    { id: 5, cap: 1, title: "Beszélj dalcímekkel 🎶",
-      text: "A mondataidba illessz bele általad ismert dalcímeket (pl. „ez a feladat nem is olyan egyszerű” – Dzsúdló: Egyszerű). Számold! Ha éjfélig nem éred el a 19 mondatot, iszol – legyél akármilyen állapotban.",
-      who: ["bence","gergo","dominik","oliver","dana","bugi","zsani","kira","deri","barni"] },
-    { id: 6, cap: 1, title: "Halli Galli kihívás 🔔",
-      text: "Hívj ki valakit Halli Gallira (kétszemélyes társasjáték – ha nem tudod a szabályokat, kérdezd meg a házigazdát). Ahány visszautasítást kapsz, annyiszor iszol. A játék végén a vesztes iszik.",
-      who: ["bence","gergo","dominik","dana","bugi","zsani","kira","deri","barni"] },
-    // cap 2: 11 ember van, de csak 10 hely lenne – így a Viccmester két embernél lehet.
-    { id: 7, cap: 2, title: "Viccmester 😂",
-      text: "Süss el minél több viccet az est folyamán. Ha éjfélig nem sikerül mindenkit megnevettetned, iszol. Sokat.",
-      who: ["bence","gergo","dominik","oliver","dana","bugi","zsani","kira","deri","barni"] },
-    { id: 8, cap: 1, title: "„Jóbarátok vagyunk” 🤝",
-      text: "Mondasd ki legalább 6 emberrel ezt a mondatot: „Jóbarátok vagyunk”. Ha nem sikerül éjfélig, iszol.",
-      who: ["bence","gergo","dominik","oliver","dana","bugi","zsani","kira","deri"] }
-  ];
-  const FIXED = { orsi: 1 }; // Orsi fixen az "Itass le valakit"-et kapja
-
-  // Ha más sorsolást szeretnél, írd át ezt a szöveget bármi másra.
-  const SEED = "bugi-szulinap-2026";
-
-  // ---- Determinisztikus sorsolás: mindenkinek mindig ugyanaz jön ki ----
-  function hash(str) { let h = 1779033703 ^ str.length;
-    for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = (h << 13) | (h >>> 19); }
-    return h >>> 0; }
-  function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0;
-    let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-    return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-  function shuffle(arr, rnd) { const a = arr.slice();
-    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
-    return a; }
-
-  function assign() {
-    const rnd = mulberry32(hash(SEED));
-    const cap = {}; TASKS.forEach(t => cap[t.id] = t.cap);
-    const res = {};
-    for (const p in FIXED) { res[p] = FIXED[p]; cap[FIXED[p]]--; }
-    const opts = p => TASKS.filter(t => t.who.includes(p)).map(t => t.id);
-    let people = shuffle(Object.keys(PEOPLE).filter(p => !(p in res)), rnd);
-    people.sort((a, b) => opts(a).length - opts(b).length); // legszűkebb választás előre
-    const order = {}; people.forEach(p => order[p] = shuffle(opts(p), rnd));
-    (function bt(i) {
-      if (i === people.length) return true;
-      const p = people[i];
-      for (const t of order[p]) {
-        if (cap[t] > 0) { cap[t]--; res[p] = t; if (bt(i + 1)) return true; cap[t]++; delete res[p]; }
-      }
-      return false;
-    })(0);
-    return res;
-  }
-  const ASSIGN = assign();
-  window.__debugAssign = () => ASSIGN; // konzolból ellenőrizhető
-
-  // ---- UI ----
-  const norm = s => s.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z]/g, "");
+  const { PEOPLE, BIRTHDAY, TASKS, DB, DEMO, norm, ensureAssignment, deviceId } = BULI;
   const $ = id => document.getElementById(id);
+  const DEV = deviceId();
+  let current = null;
 
-  function show(key) {
-    const task = TASKS.find(t => t.id === ASSIGN[key]);
-    if (!task) { $("err").textContent = "Hoppá, neked nem jutott feladat. Szólj Derinek!"; return; }
+  if (DEMO) $("demo").classList.remove("hidden");
+
+  const getSaved = () => { try { return localStorage.getItem("buli-name"); } catch (e) { return null; } };
+  const setSaved = v => { try { v ? localStorage.setItem("buli-name", v) : localStorage.removeItem("buli-name"); } catch (e) {} };
+
+  function showLogin(msg) {
+    current = null;
+    $("result").classList.add("hidden");
+    $("login").classList.remove("hidden");
+    $("err").textContent = msg || "";
+  }
+
+  function render(key, taskId, animate) {
+    const task = TASKS.find(t => t.id === taskId);
     $("who").textContent = PEOPLE[key];
     $("bday").classList.toggle("hidden", key !== BIRTHDAY);
-    $("tno").textContent = "A te feladatod";
-    $("ttitle").textContent = task.title;
-    $("ttext").textContent = task.text;
+    $("ttitle").textContent = task ? task.title : "Még nincs feladatod…";
+    $("ttext").textContent = task ? task.text : "Szólj Derinek!";
     $("login").classList.add("hidden");
     const r = $("result"); r.classList.remove("hidden");
-    r.classList.remove("reveal"); void r.offsetWidth; r.classList.add("reveal");
-    confetti();
-    try { localStorage.setItem("buli-name", key); } catch (e) {}
+    if (animate) { r.classList.remove("reveal"); void r.offsetWidth; r.classList.add("reveal"); confetti(); }
+  }
+
+  async function enter(key, isRestore) {
+    $("go").disabled = true;
+    try {
+      await ensureAssignment();
+      // Név lefoglalása ehhez az eszközhöz (tranzakció: két telefon nem tudja egyszerre)
+      const r = await DB.txn("claims/" + key, cur => {
+        if (!cur) return { device: DEV, at: Date.now() };
+        if (cur.device === DEV) return cur;
+        return undefined; // valaki más már belépett ezzel a névvel
+      });
+      if (!r.committed) {
+        setSaved(null);
+        showLogin("🚫 Ezzel a névvel már beléptek egy másik telefonról. Ha ez tévedés, szólj Derinek.");
+        return;
+      }
+      setSaved(key);
+      current = key;
+      let first = true;
+      DB.on("assignment/" + key, taskId => {
+        if (current !== key) return;
+        render(key, taskId, first && !isRestore);
+        if (!first) confetti(); // újraosztásnál is jöjjön konfetti
+        first = false;
+      });
+      DB.on("claims/" + key, c => {
+        if (current !== key) return;
+        if (!c || c.device !== DEV) { setSaved(null); $("name").value = ""; showLogin("Az admin visszaállította a belépésed – lépj be újra!"); }
+      });
+    } catch (e) {
+      console.error(e);
+      showLogin("Hiba történt a kapcsolódáskor 😕 Próbáld újra!");
+    } finally {
+      $("go").disabled = false;
+    }
   }
 
   $("form").addEventListener("submit", e => {
@@ -226,13 +114,13 @@
     const key = norm($("name").value);
     if (!key) { $("err").textContent = "Írd be a beceneved! 🙂"; return; }
     if (!PEOPLE[key]) { $("err").textContent = "Ilyen nevet nem ismerek 🤔 Próbáld a becenevedet (pl. Deri)."; return; }
+    const saved = getSaved();
+    if (saved && saved !== key && PEOPLE[saved]) {
+      $("err").textContent = "🚫 Erről a telefonról már beléptek " + PEOPLE[saved] + " néven. Egy telefon = egy ember!";
+      return;
+    }
     $("err").textContent = "";
-    show(key);
-  });
-  $("back").addEventListener("click", () => {
-    try { localStorage.removeItem("buli-name"); } catch (e) {}
-    $("result").classList.add("hidden"); $("login").classList.remove("hidden");
-    $("name").value = ""; $("name").focus();
+    enter(key, false);
   });
 
   function confetti() {
@@ -251,13 +139,14 @@
 
   function tick() {
     const now = new Date(), mid = new Date(now); mid.setHours(24, 0, 0, 0);
-    let s = Math.max(0, Math.floor((mid - now) / 1000));
+    const s = Math.max(0, Math.floor((mid - now) / 1000));
     const p = n => String(n).padStart(2, "0");
     $("cd").textContent = p(Math.floor(s / 3600)) + ":" + p(Math.floor(s % 3600 / 60)) + ":" + p(s % 60);
   }
   tick(); setInterval(tick, 1000);
 
-  try { const saved = localStorage.getItem("buli-name"); if (saved && PEOPLE[saved]) show(saved); } catch (e) {}
+  const saved = getSaved();
+  if (saved && PEOPLE[saved]) enter(saved, true);
 })();
 </script>
 </body>
