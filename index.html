@@ -46,16 +46,17 @@
     <hr class="rule">
 
     <div id="stepBase">
-      <div class="task-no">Alapfeladat</div>
+      <div class="task-no">Alapfeladat – A kém</div>
       <p class="task-text base">Éjfélig találd ki minél több ember feladatát.</p>
-      <button type="button" id="toTask">[ Tovább a saját feladatomra ]</button>
+      <button type="button" id="toTask" class="hold"><span class="hold-fill"></span><span class="hold-label">[ Tovább a saját feladatomra ]</span></button>
+      <p class="hold-hint">Tartsd nyomva a gombot</p>
     </div>
 
     <div id="stepTask" class="hidden">
       <div class="task-no">Személyes küldetés</div>
       <h2 class="task-title" id="ttitle"></h2>
       <p class="task-text" id="ttext"></p>
-      <div class="deadline">Határidő: <b>ma 00:00</b>.<br>Kudarc esetén tudod, mi a dolgod.</div>
+      <div class="deadline">Határidő: <b class="midnight">ÉJFÉL</b></div>
       <p class="secret">Ez az üzenet titkos. Ne oszd meg senkivel.<br>Az azonosítód ehhez az eszközhöz van kötve.</p>
     </div>
   </section>
@@ -156,7 +157,28 @@
     else { $("stepTask").classList.add("hidden"); $("stepBase").classList.remove("hidden"); }
   }
 
-  $("toTask").addEventListener("click", () => {
+  // 2 másodpercig nyomva kell tartani
+  (function holdButton(btn, ms, done) {
+    let timer = null;
+    const start = e => {
+      if (e && e.type === "keydown" && e.key !== "Enter" && e.key !== " ") return;
+      if (e) e.preventDefault();
+      if (timer) return;
+      btn.classList.add("holding");
+      if (navigator.vibrate) try { navigator.vibrate(15); } catch (err) {}
+      timer = setTimeout(() => { timer = null; btn.classList.remove("holding"); done(); }, ms);
+    };
+    const cancel = () => {
+      if (!timer) return;
+      clearTimeout(timer); timer = null;
+      btn.classList.remove("holding");
+    };
+    btn.addEventListener("pointerdown", start);
+    btn.addEventListener("keydown", start);
+    ["pointerup", "pointerleave", "pointercancel", "keyup", "blur"].forEach(ev => btn.addEventListener(ev, cancel));
+    btn.addEventListener("contextmenu", e => e.preventDefault());
+  })($("toTask"), 2000, () => {
+    if (navigator.vibrate) try { navigator.vibrate([30, 40, 60]); } catch (err) {}
     step = "task";
     glitch();
     showTask(true);

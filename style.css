@@ -158,6 +158,26 @@ button.danger:hover { background: var(--white); color: #000; }
 .task-text { font-size: 15px; line-height: 1.7; margin: 0; color: var(--text); min-height: 3em; }
 .task-text.base { min-height: 0; margin: 10px 0 10px; color: var(--white); font-size: 20px; line-height: 1.5; font-weight: 700; }
 #toTask { letter-spacing: .1em; margin-top: 22px; }
+
+/* nyomva tartós gomb */
+button.hold {
+  position: relative; overflow: hidden; background: #000; color: var(--white);
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none;
+}
+button.hold:hover { background: #000; color: var(--white); }
+.hold-fill {
+  position: absolute; inset: 0; width: 0; background: var(--white); pointer-events: none;
+}
+button.hold.holding .hold-fill { animation: holdFill 2s linear forwards; }
+@keyframes holdFill { from { width: 0; } to { width: 100%; } }
+button.hold.holding { animation: holdShake .12s steps(2) infinite; }
+@keyframes holdShake { 50% { transform: translateX(1px); } }
+.hold-label { position: relative; color: var(--white); mix-blend-mode: difference; pointer-events: none; }
+.hold-hint { margin: 8px 0 0; text-align: center; font-size: 10px; letter-spacing: .25em; text-transform: uppercase; color: var(--muted); }
+
+.deadline { display: flex; align-items: baseline; gap: 12px; text-transform: uppercase; letter-spacing: .15em; font-size: 12px; color: var(--muted); }
+.midnight { font-size: 28px; letter-spacing: .12em; color: var(--white); text-shadow: 2px 0 #6a6a6a, -2px 0 #2e2e2e; animation: flick 3s infinite; }
+@keyframes flick { 0%, 88%, 100% { opacity: 1; } 90% { opacity: .25; } 92% { opacity: 1; } 95% { opacity: .4; } }
 .agent { margin: 0 0 16px; line-height: 1.1; text-transform: uppercase; }
 .agent-label { display: block; font-size: 12px; letter-spacing: .3em; color: var(--muted); margin-bottom: 6px; }
 .agent-name { font-size: clamp(32px, 11vw, 48px); font-weight: 700; color: var(--white); letter-spacing: .05em; text-shadow: 2px 0 #6a6a6a, -2px 0 #2e2e2e; }
@@ -212,6 +232,8 @@ button.danger:hover { background: var(--white); color: #000; }
   .task-text { font-size: 14px; line-height: 1.55; min-height: 0; }
   .task-text.base { font-size: 18px; }
   .deadline { margin-top: 12px; padding: 8px 12px; font-size: 12px; line-height: 1.5; }
+  .midnight { font-size: 24px; }
+  .hold-hint { margin-top: 6px; }
   .secret { margin-top: 10px; font-size: 10px; line-height: 1.6; }
 
   /* az ismertető után a fejléc összemegy */
