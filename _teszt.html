@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="hu">
+<head><meta charset="utf-8"><title>Terheléses teszt</title>
+<style>body{background:#000;color:#ddd;font:14px monospace;padding:16px}.ok{color:#8f8}.bad{color:#f66}</style>
+</head>
+<body>
+<h2>11 telefon szimulálása (külön Firebase-kapcsolatokkal, a "buli-teszt" ágon)</h2>
+<pre id="log"></pre>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="config.js"></script>
+<script src="shared.js"></script>
+<script>
+(async function () {
+  const { PEOPLE, TASKS, FIXED, deal, resolve } = BULI;
+  const ROOT = "buli-teszt"; // NEM az éles "buli" ág
+  const logEl = document.getElementById("log");
+  const results = [];
+  const log = (t, cls) => { const s = document.createElement("span"); if (cls) s.className = cls; s.textContent = t + "\n"; logEl.appendChild(s); };
+  const check = (name, ok, extra) => { results.push(ok); log((ok ? "✔ " : "✘ ") + name + (extra ? "  – " + extra : ""), ok ? "ok" : "bad"); };
+
+  // Minden "telefon" külön Firebase app-példány = külön kapcsolat, mint a valóságban
+  function phone(i) {
+    const app = firebase.initializeApp(window.FIREBASE_CONFIG, "phone" + i + "-" + Date.now());
+    const root = app.database().ref(ROOT);
+    const dev = "teszt-telefon-" + i;
+    return {
+      dev, app, root,
+      // ugyanaz a logika, mint shared.js ensureAssignment + index.html enter()
+      async ensureAssignment() { const r = await root.child("assignment").transaction(cur => cur || deal()); return r.snapshot.val(); },
+      async claim(key) {
+        const r = await root.child("claims/" + key).transaction(cur => {
+          if (!cur) return { device: dev, at: Date.now() };
+          if (cur.device === dev) return cur;
+          return undefined;
+        });
+        return r.committed;
+      },
+      async task(key) { return (await root.child("assignment/" + key).get()).val(); }
+    };
+  }
+
+  const admin = firebase.initializeApp(window.FIREBASE_CONFIG, "admin-" + Date.now()).database().ref(ROOT);
+  await admin.remove();
+  log("Tiszta lap a teszt-ágon.\n");
+
+  const names = ["Gabi", "Daniella", "Benő", "Orsolya", "Geri", "Domi", "Oli", "Zsanett", "Kovács Kira", "Barnus", "Deri"];
+  const keys = names.map(resolve);
+  check("Mind a 11 becenév felismerve", keys.every(Boolean), keys.join(", "));
+
+  // 1) Mind a 11 ember EGYSZERRE belép (üres adatbázisra – mindenki egyszerre próbálja kiosztani a feladatokat)
+  const phones = keys.map((k, i) => phone(i));
+  const t0 = performance.now();
+  const assigns = await Promise.all(phones.map(p => p.ensureAssignment()));
+  const claims = await Promise.all(phones.map((p, i) => p.claim(keys[i])));
+  const ms = Math.round(performance.now() - t0);
+  check("Mind a 11 belépés sikerült egyszerre", claims.every(Boolean), ms + " ms alatt");
+  const same = assigns.every(a => JSON.stringify(a) === JSON.stringify(assigns[0]));
+  check("Mindenki UGYANAZT a kiosztást látja (nem sorsolt mindenki külön)", same);
+
+  // 2) A kiosztás érvényes?
+  const A = (await admin.child("assignment").get()).val();
+  const cnt = {}; let badWho = [];
+  Object.keys(PEOPLE).forEach(k => { cnt[A[k]] = (cnt[A[k]] || 0) + 1; const t = TASKS.find(x => x.id === A[k]); if (!t || !t.who.includes(k)) badWho.push(k); });
+  check("Mind a 11 embernek van feladata", Object.keys(PEOPLE).every(k => A[k]));
+  check("Senki nem kapott olyat, amit nem kaphat", badWho.length === 0, badWho.join(","));
+  check("Minden feladat pont annyiszor van kiosztva, ahányszor kell (2x-esek kétszer)", TASKS.every(t => cnt[t.id] === t.cap),
+    TASKS.map(t => t.id + ":" + (cnt[t.id] || 0) + "/" + t.cap).join(" "));
+  check("Orsi az 'Itass le valakit'-et kapta", A.orsi === 1);
+  const fromPhones = await Promise.all(phones.map((p, i) => p.task(keys[i])));
+  check("Minden telefon a saját feladatát kapja vissza", fromPhones.every((t, i) => t === A[keys[i]]));
+
+  // 3) Csalók: egy 12. telefon minden névvel megpróbál belépni
+  const cheat = phone(99);
+  const cheatRes = await Promise.all(keys.map(k => cheat.claim(k)));
+  check("Idegen telefon egyik foglalt névvel sem tud belépni", cheatRes.every(r => !r));
+
+  // 4) Versenyhelyzet: ugyanarra a szabad névre 5 telefon egyszerre
+  await admin.child("claims/deri").remove();
+  const racers = [100, 101, 102, 103, 104].map(phone);
+  const race = await Promise.all(racers.map(p => p.claim("deri")));
+  check("5 telefon egyszerre ugyanarra a névre: pontosan 1 nyer", race.filter(Boolean).length === 1, race.join(","));
+
+  // 5) Saját telefon újra belép (újratöltés) – engedni kell
+  const winner = racers[race.indexOf(true)];
+  check("A nyertes telefon újra be tud lépni ugyanazzal a névvel", await winner.claim("deri"));
+
+  // 6) Admin: egy belépés törlése, majd más telefonról újra be lehet lépni
+  await admin.child("claims/deri").remove();
+  check("Admin törlés után más telefonról is be lehet lépni", await phones[10].claim("deri"));
+
+  // 7) Admin újraosztás: mindenki az új kiosztást látja
+  const newA = deal();
+  await admin.child("assignment").set(newA);
+  await new Promise(r => setTimeout(r, 500));
+  const after = await Promise.all(phones.map((p, i) => p.task(keys[i])));
+  check("Újraosztás után mindenki az új feladatát látja", after.every((t, i) => t === newA[keys[i]]));
+
+  // 8) Admin: összes belépés törlése
+  await admin.child("claims").remove();
+  const again = await Promise.all(phones.map((p, i) => p.claim(keys[i])));
+  check("Összes belépés törlése után mindenki újra be tud lépni", again.every(Boolean));
+
+  // takarítás
+  await admin.remove();
+  log("\nTeszt-ág törölve.");
+  const ok = results.every(Boolean);
+  log("\n" + (ok ? "MINDEN TESZT SIKERES (" : "HIBA VAN (") + results.filter(Boolean).length + "/" + results.length + ")", ok ? "ok" : "bad");
+  window.__TEST_DONE__ = { ok, passed: results.filter(Boolean).length, total: results.length };
+})().catch(e => { document.getElementById("log").textContent += "\nKIVÉTEL: " + e.message; window.__TEST_DONE__ = { ok: false, error: e.message }; });
+</script>
+</body>
+</html>

@@ -19,7 +19,7 @@
       text: "Hívd ki a szülinapost sörpongra, és válassz valakit magad mellé. A vesztes iszik. (Ha a szülinapos nem akar játszani, válassz valaki mást.)",
       who: ["gergo","dominik","oliver","dana","zsani","kira","deri"] },
     { id: 4, cap: 2, title: "Csíped a szülinapost?",
-      text: "Ezt a feladatot rajtad kívül még valaki megkapta. Keresd meg a társad, és dolgozzatok össze. Célotok, hogy minél több csipeszt tegyetek a szülinaposra. De ha észreveszi a csipeszeket és LEVESZI, mindketten isztok. A feladatot utána újrakezdhetitek.",
+      text: "Ezt a feladatot rajtad kívül még valaki megkapta. Keresd meg a társad, és dolgozzatok össze. Célotok, hogy minél több csipeszt tegyetek a szülinaposra. Ha észreveszi a csipeszeket, mindketten isztok egyet. Ha LE IS VESZI őket, duplát isztok. A feladatot utána újrakezdhetitek.",
       who: ["bence","gergo","dominik","oliver","dana","zsani","kira"] },
     { id: 5, cap: 1, title: "Beszélj dalcímekkel",
       text: "A mondataidba illessz bele általad ismert dalcímeket (pl. „ez a feladat nem is olyan egyszerű” – Dzsúdló: Egyszerű). Számold! Ha éjfélig nem éred el a 19 mondatot, iszol – legyél akármilyen állapotban.",
