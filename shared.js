@@ -12,25 +12,25 @@
     { id: 1, cap: 2, title: "Itass le valakit!",
       text: "Válassz ki valakit, és éjfélig itasd le. Légy kreatív!",
       who: ["gergo","dominik","oliver","dana","bugi","zsani","kira","deri","orsi"] },
-    { id: 2, cap: 2, title: "Táncpárbaj! 💃",
+    { id: 2, cap: 2, title: "Táncpárbaj!",
       text: "Hívj ki valakit egy táncpárbajra (Just Dance). A többiek szavaznak a győztesről – a vesztes iszik.",
       who: ["gergo","dominik","dana","bugi","zsani","kira","deri"] },
-    { id: 3, cap: 1, title: "Sörpong a szülinapossal 🍺",
+    { id: 3, cap: 1, title: "Sörpong a szülinapossal",
       text: "Hívd ki a szülinapost sörpongra, és válassz valakit magad mellé. A vesztes iszik. (Ha a szülinapos nem akar játszani, válassz valaki mást.)",
       who: ["gergo","dominik","oliver","dana","zsani","kira","deri"] },
-    { id: 4, cap: 2, title: "Csíped a szülinapost? 📎",
+    { id: 4, cap: 2, title: "Csíped a szülinapost?",
       text: "Két ember vesz részt, és a cél, hogy minél több csipeszt tegyetek a szülinaposra. De ha észreveszi a csipeszeket és LEVESZI, mindketten isztok. A feladatot utána újrakezdhetitek.",
       who: ["bence","gergo","dominik","oliver","dana","zsani","kira"] },
-    { id: 5, cap: 1, title: "Beszélj dalcímekkel 🎶",
+    { id: 5, cap: 1, title: "Beszélj dalcímekkel",
       text: "A mondataidba illessz bele általad ismert dalcímeket (pl. „ez a feladat nem is olyan egyszerű” – Dzsúdló: Egyszerű). Számold! Ha éjfélig nem éred el a 19 mondatot, iszol – legyél akármilyen állapotban.",
       who: ["bence","gergo","dominik","oliver","dana","bugi","zsani","kira","deri","barni"] },
-    { id: 6, cap: 1, title: "Halli Galli kihívás 🔔",
+    { id: 6, cap: 1, title: "Halli Galli kihívás",
       text: "Hívj ki valakit Halli Gallira (kétszemélyes társasjáték – ha nem tudod a szabályokat, kérdezd meg a házigazdát). Ahány visszautasítást kapsz, annyiszor iszol. A játék végén a vesztes iszik.",
       who: ["bence","gergo","dominik","dana","bugi","zsani","kira","deri","barni"] },
-    { id: 7, cap: 1, title: "Viccmester 😂",
+    { id: 7, cap: 1, title: "Viccmester",
       text: "Süss el minél több viccet az est folyamán. Ha éjfélig nem sikerül mindenkit megnevettetned, iszol. Sokat.",
       who: ["bence","gergo","dominik","oliver","dana","bugi","zsani","kira","deri","barni"] },
-    { id: 8, cap: 1, title: "„Jóbarátok vagyunk” 🤝",
+    { id: 8, cap: 1, title: "„Jóbarátok vagyunk”",
       text: "Mondasd ki legalább 6 emberrel ezt a mondatot: „Jóbarátok vagyunk”. Ha nem sikerül éjfélig, iszol.",
       who: ["bence","gergo","dominik","oliver","dana","bugi","zsani","kira","deri"] }
   ];
@@ -64,6 +64,25 @@
   }
 
   const norm = s => (s || "").trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z]/g, "");
+
+  // Elfogadott becenevek / alternatív nevek (kis-nagybetű, ékezet, szóköz nem számít)
+  const ALIASES = {
+    bugi: ["gabi", "gabriella"],
+    dana: ["daniella"],
+    bence: ["benő", "blaskó"],
+    orsi: ["orsolya"],
+    gergo: ["gera", "papp gergő", "geri"],
+    dominik: ["domi"],
+    oliver: ["oli"],
+    zsani: ["zsanett"],
+    kira: ["kovács kira"],
+    barni: ["barnus", "barnabás"]
+  };
+  const LOOKUP = {};
+  Object.keys(PEOPLE).forEach(k => { LOOKUP[k] = k; });
+  Object.entries(ALIASES).forEach(([k, list]) => list.forEach(a => { LOOKUP[norm(a)] = k; }));
+  // Beírt névből a résztvevő kulcsa (vagy null, ha nem ismerjük)
+  const resolve = s => LOOKUP[norm(s)] || null;
 
   // ===== Adatbázis: Firebase, vagy DEMO módban localStorage =====
   const cfg = window.FIREBASE_CONFIG || {};
@@ -119,5 +138,5 @@
     } catch (e) { return "nostorage-" + Math.random().toString(36).slice(2); }
   }
 
-  window.BULI = { PEOPLE, BIRTHDAY, TASKS, FIXED, deal, norm, DB, DEMO, ensureAssignment, deviceId };
+  window.BULI = { PEOPLE, BIRTHDAY, TASKS, FIXED, deal, norm, resolve, DB, DEMO, ensureAssignment, deviceId };
 })();

@@ -3,39 +3,61 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bugi Szülinap – Feladatok</title>
+<meta name="theme-color" content="#050505">
+<title>Titkos feladat</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="emoji">🎂</div>
-    <h1>Boldog szülinapot, Bugi!</h1>
-    <p class="sub">Írd be a beceneved, és megkapod a titkos feladatod.</p>
-    <div class="countdown">⏳ Éjfélig: <span id="cd">--:--:--</span></div>
+    <div class="tag">Bizalmas</div>
+    <h1 class="glitch" data-text="Titkos feladat">Titkos feladat</h1>
+    <p class="sub">Azonosítsd magad, hogy megkapd a küldetésed.<br>Senki nem tudhatja, mi a tiéd.</p>
+    <div class="countdown">Lejárat <span id="cd">--:--:--</span></div>
   </header>
 
-  <div id="demo" class="demo hidden">⚠️ DEMO mód: nincs beállítva adatbázis (config.js), a belépések csak ezen az eszközön tárolódnak.</div>
+  <div id="demo" class="demo hidden">[demo mód] nincs beállítva adatbázis (config.js) – a belépések csak ezen az eszközön tárolódnak.</div>
 
-  <section id="login" class="card">
+  <section id="intro" class="card">
+    <div class="task-no">Küldetés</div>
+    <div class="intro-text" id="introText">
+      <p>Ma este mindenki kap egy titkos feladatot, amit <b>éjfélig</b> teljesítenie kell.</p>
+      <p>A feladatodról senki más nem tudhat. Ne mutasd meg, ne áruld el, ne célozgass.</p>
+      <p>Figyeld a többieket. Ők is küldetésen vannak – és téged is figyelnek.</p>
+      <p>Ha éjfélig nem sikerül… tudod, mi a dolgod.</p>
+    </div>
+    <button type="button" id="next">[ Következő ]</button>
+  </section>
+
+  <section id="login" class="card hidden">
     <form id="form" autocomplete="off">
-      <label for="name">Mi a beceneved?</label>
-      <input id="name" placeholder="pl. Deri" autocapitalize="words" spellcheck="false">
-      <button type="submit" id="go">Mutasd a feladatom! 🎉</button>
+      <label for="name">&gt; Add meg a keresztneved vagy beceneved_</label>
+      <input id="name" placeholder="pl. Bugi" autocapitalize="words" spellcheck="false">
+      <button type="submit" id="go">[ Belépés ]</button>
       <p class="error" id="err"></p>
     </form>
   </section>
 
   <section id="result" class="card hidden">
-    <p class="hello">Szia, <b id="who"></b>!</p>
-    <div id="bday" class="badge hidden">🎈 Te vagy a szülinapos!</div>
-    <div class="task-no">A te feladatod</div>
-    <h2 class="task-title" id="ttitle"></h2>
-    <p class="task-text" id="ttext"></p>
-    <div class="deadline">🕛 Határidő: ma éjfél. Ha nem sikerül… tudod mi a dolgod. 🍻</div>
-    <p class="secret">🤫 Psszt! Senkinek ne áruld el a feladatod.<br>A neved mostantól ehhez a telefonhoz van kötve.</p>
+    <div class="agent"><span class="agent-label">Ügynök:</span> <span id="who" class="agent-name"></span></div>
+    <div id="bday" class="badge hidden">Különleges célszemély – te vagy a szülinapos</div>
+    <hr class="rule">
+
+    <div id="stepBase">
+      <div class="task-no">Alapfeladat</div>
+      <p class="task-text base">Éjfélig találd ki minél több ember feladatát.</p>
+      <button type="button" id="toTask">[ Tovább a saját feladatomra ]</button>
+    </div>
+
+    <div id="stepTask" class="hidden">
+      <div class="task-no">Személyes küldetés</div>
+      <h2 class="task-title" id="ttitle"></h2>
+      <p class="task-text" id="ttext"></p>
+      <div class="deadline">Határidő: <b>ma 00:00</b>.<br>Kudarc esetén tudod, mi a dolgod.</div>
+      <p class="secret">Ez az üzenet titkos. Ne oszd meg senkivel.<br>Az azonosítód ehhez az eszközhöz van kötve.</p>
+    </div>
   </section>
 </div>
 
@@ -45,7 +67,7 @@
 <script src="shared.js"></script>
 <script>
 (function () {
-  const { PEOPLE, BIRTHDAY, TASKS, DB, DEMO, norm, ensureAssignment, deviceId } = BULI;
+  const { PEOPLE, BIRTHDAY, TASKS, DB, DEMO, norm, resolve, ensureAssignment, deviceId } = BULI;
   const $ = id => document.getElementById(id);
   const DEV = deviceId();
   let current = null;
@@ -55,34 +77,101 @@
   const getSaved = () => { try { return localStorage.getItem("buli-name"); } catch (e) { return null; } };
   const setSaved = v => { try { v ? localStorage.setItem("buli-name", v) : localStorage.removeItem("buli-name"); } catch (e) {} };
 
+  // ---- effektek ----
+  function glitch() {
+    document.body.classList.remove("glitching"); void document.body.offsetWidth;
+    document.body.classList.add("glitching");
+    setTimeout(() => document.body.classList.remove("glitching"), 400);
+  }
+  const GLYPHS = "!<>-_\\/[]{}=+*^?#░▒▓01ABCDEFXZ";
+  const timers = new Map();
+  function stop(el) { (timers.get(el) || []).forEach(clearInterval); timers.set(el, []); el.classList.remove("typing"); }
+  // titkosított szöveg "visszafejtése"
+  function scramble(el, text, ms) {
+    stop(el);
+    const start = performance.now();
+    const id = setInterval(() => {
+      const p = Math.min(1, (performance.now() - start) / ms);
+      const n = Math.floor(text.length * p);
+      let out = text.slice(0, n);
+      for (let i = n; i < text.length; i++) out += text[i] === " " ? " " : GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+      el.textContent = out;
+      if (p >= 1) { clearInterval(id); el.textContent = text; }
+    }, 35);
+    timers.get(el).push(id);
+  }
+  // írógép-effekt
+  function typewrite(el, text, delay) {
+    stop(el);
+    el.textContent = "";
+    el.classList.add("typing");
+    let i = 0;
+    const t0 = setTimeout(() => {
+      const id = setInterval(() => {
+        i += 2; el.textContent = text.slice(0, i);
+        if (i >= text.length) { clearInterval(id); el.classList.remove("typing"); }
+      }, 18);
+      timers.get(el).push(id);
+    }, delay);
+    timers.get(el).push(t0);
+  }
+
   function showLogin(msg) {
     current = null;
+    document.body.classList.add("compact");
+    $("intro").classList.add("hidden");
     $("result").classList.add("hidden");
     $("login").classList.remove("hidden");
     $("err").textContent = msg || "";
   }
 
-  function render(key, taskId, animate) {
-    const task = TASKS.find(t => t.id === taskId);
-    $("who").textContent = PEOPLE[key];
-    $("bday").classList.toggle("hidden", key !== BIRTHDAY);
-    $("ttitle").textContent = task ? task.title : "Még nincs feladatod…";
-    $("ttext").textContent = task ? task.text : "Szólj Derinek!";
-    $("login").classList.add("hidden");
-    const r = $("result"); r.classList.remove("hidden");
-    if (animate) { r.classList.remove("reveal"); void r.offsetWidth; r.classList.add("reveal"); confetti(); }
+  // step: "base" = Alapfeladat oldal, "task" = Személyes küldetés oldal
+  let step = "base", curTask = null;
+
+  function showTask(animate) {
+    const title = curTask ? curTask.title : "Még nincs küldetésed";
+    const text = curTask ? curTask.text : "Szólj Derinek.";
+    $("stepBase").classList.add("hidden");
+    $("stepTask").classList.remove("hidden");
+    if (animate) {
+      scramble($("ttitle"), title, 1100);
+      typewrite($("ttext"), text, 1100);
+    } else {
+      stop($("ttitle")); stop($("ttext"));
+      $("ttitle").textContent = title;
+      $("ttext").textContent = text;
+    }
   }
+
+  function render(key, taskId, animate) {
+    curTask = TASKS.find(t => t.id === taskId) || null;
+    $("bday").classList.toggle("hidden", key !== BIRTHDAY);
+    document.body.classList.add("compact");
+    $("intro").classList.add("hidden");
+    $("login").classList.add("hidden");
+    $("result").classList.remove("hidden");
+    if (animate) { glitch(); scramble($("who"), PEOPLE[key].toUpperCase(), 500); }
+    else { stop($("who")); $("who").textContent = PEOPLE[key].toUpperCase(); }
+    if (step === "task") showTask(animate);
+    else { $("stepTask").classList.add("hidden"); $("stepBase").classList.remove("hidden"); }
+  }
+
+  $("toTask").addEventListener("click", () => {
+    step = "task";
+    glitch();
+    showTask(true);
+  });
 
   async function enter(key, isRestore) {
     $("go").disabled = true;
+    $("go").textContent = "[ Kapcsolódás… ]";
     try {
       // Újratöltéskor csak akkor lépünk vissza automatikusan, ha a belépés még él az adatbázisban.
-      // Ha az admin közben törölte, elfelejtjük a nevet ezen a telefonon is.
       if (isRestore) {
         const c = await DB.get("claims/" + key);
         if (!c || c.device !== DEV) {
           setSaved(null);
-          showLogin("Az admin visszaállította a belépésed – lépj be újra!");
+          showLogin("Az azonosítód vissza lett vonva. Lépj be újra.");
           return;
         }
       }
@@ -91,61 +180,56 @@
       const r = await DB.txn("claims/" + key, cur => {
         if (!cur) return { device: DEV, at: Date.now() };
         if (cur.device === DEV) return cur;
-        return undefined; // valaki más már belépett ezzel a névvel
+        return undefined;
       });
       if (!r.committed) {
         setSaved(null);
-        showLogin("🚫 Ezzel a névvel már beléptek egy másik telefonról. Ha ez tévedés, szólj Derinek.");
+        glitch();
+        showLogin("Hozzáférés megtagadva. Ezzel az azonosítóval már beléptek egy másik eszközről. Ha ez tévedés, szólj Derinek.");
         return;
       }
       setSaved(key);
       current = key;
+      step = isRestore ? "task" : "base"; // újratöltésnél egyből a saját feladat
       let first = true;
       DB.on("assignment/" + key, taskId => {
         if (current !== key) return;
-        render(key, taskId, first && !isRestore);
-        if (!first) confetti(); // újraosztásnál is jöjjön konfetti
+        render(key, taskId, !isRestore || !first); // újraosztásnál is újra "visszafejti"
         first = false;
       });
       DB.on("claims/" + key, c => {
         if (current !== key) return;
-        if (!c || c.device !== DEV) { setSaved(null); $("name").value = ""; showLogin("Az admin visszaállította a belépésed – lépj be újra!"); }
+        if (!c || c.device !== DEV) { setSaved(null); $("name").value = ""; glitch(); showLogin("Az azonosítód vissza lett vonva. Lépj be újra."); }
       });
     } catch (e) {
       console.error(e);
-      showLogin("Hiba történt a kapcsolódáskor 😕 Próbáld újra!");
+      showLogin("Kapcsolódási hiba. Próbáld újra.");
     } finally {
       $("go").disabled = false;
+      $("go").textContent = "[ Belépés ]";
     }
   }
 
+  $("next").addEventListener("click", () => {
+    glitch();
+    showLogin("");
+    $("name").focus();
+  });
+
   $("form").addEventListener("submit", e => {
     e.preventDefault();
-    const key = norm($("name").value);
-    if (!key) { $("err").textContent = "Írd be a beceneved! 🙂"; return; }
-    if (!PEOPLE[key]) { $("err").textContent = "Ilyen nevet nem ismerek 🤔 Próbáld a becenevedet (pl. Deri)."; return; }
+    if (!norm($("name").value)) { $("err").textContent = "Add meg az azonosítód."; return; }
+    const key = resolve($("name").value);
+    if (!key) { glitch(); $("err").textContent = "Ismeretlen azonosító. Próbáld a beceneved."; return; }
     const saved = getSaved();
     if (saved && saved !== key && PEOPLE[saved]) {
-      $("err").textContent = "🚫 Erről a telefonról már beléptek " + PEOPLE[saved] + " néven. Egy telefon = egy ember!";
+      glitch();
+      $("err").textContent = "Hozzáférés megtagadva. Erről az eszközről már " + PEOPLE[saved] + " néven beléptek. Egy eszköz = egy ügynök.";
       return;
     }
     $("err").textContent = "";
     enter(key, false);
   });
-
-  function confetti() {
-    const colors = ["#ff4fa3", "#ffd23f", "#3fe0d0", "#a77bff", "#ffffff"];
-    for (let i = 0; i < 80; i++) {
-      const c = document.createElement("div");
-      c.className = "confetti";
-      c.style.left = Math.random() * 100 + "vw";
-      c.style.background = colors[i % colors.length];
-      c.style.animationDuration = 1.8 + Math.random() * 1.8 + "s";
-      c.style.animationDelay = Math.random() * 0.4 + "s";
-      document.body.appendChild(c);
-      setTimeout(() => c.remove(), 4500);
-    }
-  }
 
   function tick() {
     const now = new Date(), mid = new Date(now); mid.setHours(24, 0, 0, 0);
@@ -155,8 +239,11 @@
   }
   tick(); setInterval(tick, 1000);
 
+  // időnként magától is "megbicsaklik" a kép
+  (function randomGlitch() { setTimeout(() => { glitch(); randomGlitch(); }, 10000 + Math.random() * 12000); })();
+
   const saved = getSaved();
-  if (saved && PEOPLE[saved]) enter(saved, true);
+  if (saved && PEOPLE[saved]) { document.body.classList.add("compact"); $("intro").classList.add("hidden"); enter(saved, true); }
 })();
 </script>
 </body>
