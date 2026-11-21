@@ -162,8 +162,8 @@ button.danger:hover { background: var(--white); color: #000; }
 }
 .rule { border: 0; border-top: 1px dashed var(--border); margin: 0 0 18px; }
 .task-no { color: var(--muted); font-size: 12px; letter-spacing: .3em; text-transform: uppercase; }
-.task-title { font-size: 24px; line-height: 1.25; margin: 6px 0 14px; color: var(--white); text-transform: uppercase; letter-spacing: .03em; }
-.task-text { font-size: 15px; line-height: 1.7; margin: 0; color: var(--text); min-height: 3em; }
+.task-title { font-size: 32px; line-height: 1.15; margin: 8px 0 16px; color: var(--white); text-transform: uppercase; letter-spacing: .03em; text-shadow: 2px 0 #6a6a6a, -2px 0 #2e2e2e; }
+.task-text { font-size: 18px; line-height: 1.6; margin: 0; color: var(--white); min-height: 3em; }
 .task-text.base { min-height: 0; margin: 10px 0 10px; color: var(--white); font-size: 20px; line-height: 1.5; font-weight: 700; }
 #toTask { letter-spacing: .1em; margin-top: 22px; }
 
@@ -184,7 +184,7 @@ button.hold.holding { animation: holdShake .12s steps(2) infinite; }
 .hold-hint { margin: 8px 0 0; text-align: center; font-size: 10px; letter-spacing: .25em; text-transform: uppercase; color: var(--muted); }
 
 .deadline { display: flex; align-items: baseline; gap: 12px; text-transform: uppercase; letter-spacing: .15em; font-size: 12px; color: var(--muted); }
-.midnight { font-size: 28px; letter-spacing: .12em; color: var(--white); text-shadow: 2px 0 #6a6a6a, -2px 0 #2e2e2e; animation: flick 3s infinite; }
+.midnight { color: var(--text); font-weight: 700; }
 @keyframes flick { 0%, 88%, 100% { opacity: 1; } 90% { opacity: .25; } 92% { opacity: 1; } 95% { opacity: .4; } }
 .agent { margin: 0 0 16px; line-height: 1.1; text-transform: uppercase; }
 .agent-label { display: block; font-size: 12px; letter-spacing: .3em; color: var(--muted); margin-bottom: 6px; }
@@ -199,8 +199,7 @@ button.hold.holding { animation: holdShake .12s steps(2) infinite; }
 @keyframes lineIn { to { opacity: 1; transform: none; } }
 .task-text.typing::after { content: "█"; animation: blink .8s steps(2) infinite; margin-left: 2px; }
 .deadline {
-  margin-top: 22px; padding: 12px 14px; border-left: 3px solid var(--white);
-  background: #111; font-size: 13px; line-height: 1.6;
+  margin-top: 20px; padding: 0; font-size: 11px; line-height: 1.6; gap: 8px;
 }
 .deadline b { color: var(--white); }
 .secret { color: var(--muted); font-size: 11px; letter-spacing: .12em; text-align: center; margin: 18px 0 0; text-transform: uppercase; line-height: 1.8; }
@@ -236,11 +235,10 @@ button.hold.holding { animation: holdShake .12s steps(2) infinite; }
   .agent-name { font-size: 30px; }
   .badge { font-size: 10px; margin-bottom: 10px; }
   .rule { margin-bottom: 12px; }
-  .task-title { font-size: 20px; margin: 4px 0 8px; }
-  .task-text { font-size: 14px; line-height: 1.55; min-height: 0; }
+  .task-title { font-size: 26px; margin: 6px 0 12px; }
+  .task-text { font-size: 16px; line-height: 1.55; min-height: 0; }
   .task-text.base { font-size: 18px; }
-  .deadline { margin-top: 12px; padding: 8px 12px; font-size: 12px; line-height: 1.5; }
-  .midnight { font-size: 24px; }
+  .deadline { margin-top: 14px; font-size: 10px; }
   .hold-hint { margin-top: 6px; }
   .secret { margin-top: 10px; font-size: 10px; line-height: 1.6; }
 
@@ -255,7 +253,8 @@ button.hold.holding { animation: holdShake .12s steps(2) infinite; }
   .intro-text { font-size: 13px; }
   .intro-text p { margin-bottom: 7px; }
   .glitch { font-size: 26px; }
-  .task-text { font-size: 13px; line-height: 1.5; }
+  .task-title { font-size: 22px; }
+  .task-text { font-size: 15px; line-height: 1.5; }
 }
 
 @media (prefers-reduced-motion: reduce) {
