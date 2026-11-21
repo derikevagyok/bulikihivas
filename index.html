@@ -48,8 +48,7 @@
     <div id="stepBase">
       <div class="task-no">Alapfeladat – A kém</div>
       <p class="task-text base">Éjfélig találd ki minél több ember feladatát.</p>
-      <button type="button" id="toTask" class="hold"><span class="hold-fill"></span><span class="hold-label">[ Tovább a saját feladatomra ]</span></button>
-      <p class="hold-hint">Tartsd nyomva a gombot</p>
+      <button type="button" id="toTask">[ Tovább a saját feladatomra ]</button>
     </div>
 
     <div id="stepTask" class="hidden">
@@ -175,34 +174,7 @@
     else { $("stepTask").classList.add("hidden"); $("stepBase").classList.remove("hidden"); }
   }
 
-  // 2 másodpercig nyomva kell tartani
-  (function holdButton(btn, ms, done) {
-    // Telefonon touch eseményekkel (preventDefault: ne induljon kijelölés / hosszú-nyomás menü,
-    // ami megszakítaná a nyomva tartást), gépen egérrel, billentyűzeten Enter/Space-szel.
-    let timer = null, touching = false;
-    const begin = () => {
-      if (timer) return;
-      btn.classList.remove("holding"); void btn.offsetWidth;
-      btn.classList.add("holding");
-      if (navigator.vibrate) try { navigator.vibrate(15); } catch (err) {}
-      timer = setTimeout(() => { timer = null; touching = false; btn.classList.remove("holding"); done(); }, ms);
-    };
-    const cancel = () => {
-      if (!timer) return;
-      clearTimeout(timer); timer = null;
-      btn.classList.remove("holding");
-    };
-    btn.addEventListener("touchstart", e => { e.preventDefault(); touching = true; begin(); }, { passive: false });
-    btn.addEventListener("touchend", e => { e.preventDefault(); touching = false; cancel(); }, { passive: false });
-    btn.addEventListener("touchcancel", () => { touching = false; cancel(); });
-    btn.addEventListener("mousedown", e => { if (touching) return; e.preventDefault(); begin(); });
-    btn.addEventListener("mouseup", () => { if (!touching) cancel(); });
-    btn.addEventListener("mouseleave", () => { if (!touching) cancel(); });
-    btn.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && !e.repeat) { e.preventDefault(); begin(); } });
-    btn.addEventListener("keyup", e => { if (e.key === "Enter" || e.key === " ") cancel(); });
-    btn.addEventListener("contextmenu", e => e.preventDefault());
-  })($("toTask"), 2000, () => {
-    if (navigator.vibrate) try { navigator.vibrate([30, 40, 60]); } catch (err) {}
+  $("toTask").addEventListener("click", () => {
     step = "task";
     glitch();
     showTask(true);
