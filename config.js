@@ -5,8 +5,8 @@
 window.FIREBASE_CONFIG = {
   apiKey: "",
   authDomain: "",
-  databaseURL: "",   // pl. https://valami-default-rtdb.europe-west1.firebasedatabase.app
-  projectId: "",
+  databaseURL: "https://bulikihivasdb-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "bulikihivasdb",
   appId: ""
 };
 
