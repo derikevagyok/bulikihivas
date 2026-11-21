@@ -20,6 +20,14 @@ body {
   padding: 40px 16px 56px;
   overflow-x: hidden;
 }
+/* semmit ne lehessen kijelölni (csak a beviteli mezőben gépelni) */
+body {
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+input { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+
 /* scanline + zaj réteg */
 body::before {
   content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 50;

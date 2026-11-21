@@ -117,6 +117,24 @@
     timers.get(el).push(t0);
   }
 
+  // Vissza az elejére (küldetés-ismertető) – pl. ha az admin törölte a belépést
+  function showIntro() {
+    current = null;
+    step = "base";
+    $("name").value = "";
+    $("err").textContent = "";
+    document.body.classList.remove("compact");
+    $("login").classList.add("hidden");
+    $("result").classList.add("hidden");
+    $("stepTask").classList.add("hidden");
+    $("stepBase").classList.remove("hidden");
+    const intro = $("intro");
+    intro.classList.remove("hidden");
+    // a sorok beúszó animációjának újraindítása
+    intro.querySelectorAll(".intro-text p").forEach(p => { p.style.animation = "none"; void p.offsetWidth; p.style.animation = ""; });
+    window.scrollTo(0, 0);
+  }
+
   function showLogin(msg) {
     current = null;
     document.body.classList.add("compact");
@@ -159,23 +177,29 @@
 
   // 2 másodpercig nyomva kell tartani
   (function holdButton(btn, ms, done) {
-    let timer = null;
-    const start = e => {
-      if (e && e.type === "keydown" && e.key !== "Enter" && e.key !== " ") return;
-      if (e) e.preventDefault();
+    // Telefonon touch eseményekkel (preventDefault: ne induljon kijelölés / hosszú-nyomás menü,
+    // ami megszakítaná a nyomva tartást), gépen egérrel, billentyűzeten Enter/Space-szel.
+    let timer = null, touching = false;
+    const begin = () => {
       if (timer) return;
+      btn.classList.remove("holding"); void btn.offsetWidth;
       btn.classList.add("holding");
       if (navigator.vibrate) try { navigator.vibrate(15); } catch (err) {}
-      timer = setTimeout(() => { timer = null; btn.classList.remove("holding"); done(); }, ms);
+      timer = setTimeout(() => { timer = null; touching = false; btn.classList.remove("holding"); done(); }, ms);
     };
     const cancel = () => {
       if (!timer) return;
       clearTimeout(timer); timer = null;
       btn.classList.remove("holding");
     };
-    btn.addEventListener("pointerdown", start);
-    btn.addEventListener("keydown", start);
-    ["pointerup", "pointerleave", "pointercancel", "keyup", "blur"].forEach(ev => btn.addEventListener(ev, cancel));
+    btn.addEventListener("touchstart", e => { e.preventDefault(); touching = true; begin(); }, { passive: false });
+    btn.addEventListener("touchend", e => { e.preventDefault(); touching = false; cancel(); }, { passive: false });
+    btn.addEventListener("touchcancel", () => { touching = false; cancel(); });
+    btn.addEventListener("mousedown", e => { if (touching) return; e.preventDefault(); begin(); });
+    btn.addEventListener("mouseup", () => { if (!touching) cancel(); });
+    btn.addEventListener("mouseleave", () => { if (!touching) cancel(); });
+    btn.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && !e.repeat) { e.preventDefault(); begin(); } });
+    btn.addEventListener("keyup", e => { if (e.key === "Enter" || e.key === " ") cancel(); });
     btn.addEventListener("contextmenu", e => e.preventDefault());
   })($("toTask"), 2000, () => {
     if (navigator.vibrate) try { navigator.vibrate([30, 40, 60]); } catch (err) {}
@@ -193,7 +217,7 @@
         const c = await DB.get("claims/" + key);
         if (!c || c.device !== DEV) {
           setSaved(null);
-          showLogin("Az azonosítód vissza lett vonva. Lépj be újra.");
+          showIntro();
           return;
         }
       }
@@ -221,7 +245,7 @@
       });
       DB.on("claims/" + key, c => {
         if (current !== key) return;
-        if (!c || c.device !== DEV) { setSaved(null); $("name").value = ""; glitch(); showLogin("Az azonosítód vissza lett vonva. Lépj be újra."); }
+        if (!c || c.device !== DEV) { setSaved(null); glitch(); showIntro(); }
       });
     } catch (e) {
       console.error(e);
