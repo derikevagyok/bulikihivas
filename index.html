@@ -76,6 +76,16 @@
   async function enter(key, isRestore) {
     $("go").disabled = true;
     try {
+      // Újratöltéskor csak akkor lépünk vissza automatikusan, ha a belépés még él az adatbázisban.
+      // Ha az admin közben törölte, elfelejtjük a nevet ezen a telefonon is.
+      if (isRestore) {
+        const c = await DB.get("claims/" + key);
+        if (!c || c.device !== DEV) {
+          setSaved(null);
+          showLogin("Az admin visszaállította a belépésed – lépj be újra!");
+          return;
+        }
+      }
       await ensureAssignment();
       // Név lefoglalása ehhez az eszközhöz (tranzakció: két telefon nem tudja egyszerre)
       const r = await DB.txn("claims/" + key, cur => {
